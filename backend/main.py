@@ -20,6 +20,13 @@ app = FastAPI()
 def health():
     return {"status": "ok"}
 
+@app.get("/")
+def home():
+
+    return FileResponse(
+        "frontend/index.html"
+    )
+
 @app.get("/download-report")
 def download_report():
 

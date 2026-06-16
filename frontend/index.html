@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbit — Agent Pipeline Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0E0B17;
+    --bg-panel: #161229;
+    --bg-raised: #1C1733;
+    --bg-input: #1A1530;
+    --line: #2E2752;
+    --line-soft: #221C3D;
+    --text: #ECE9F7;
+    --text-dim: #9C93B8;
+    --text-faint: #5F567E;
+    --accent: #B69CFF;
+    --accent-dim: #8B6FE8;
+    --amber: #F2B872;
+    --red: #F2756B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 36px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  .brand { display: flex; align-items: center; gap: 12px; }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent) 0%, #6B4FD1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: #0E0B17;
+    font-size: 15px;
+  }
+
+  .brand-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; }
+  .brand-sub { font-size: 11px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; margin-top: 1px; }
+
+  .new-chat-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .new-chat-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+  /* MESSAGES */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 36px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  .messages::-webkit-scrollbar { width: 6px; }
+  .messages::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  .intro {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-faint);
+    gap: 14px;
+  }
+
+  .intro-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent) 0%, #6B4FD1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: #0E0B17;
+    font-size: 23px;
+  }
+
+  .intro-title { font-family: 'Space Grotesk', sans-serif; font-size: 19px; color: var(--text); font-weight: 600; }
+  .intro-sub { font-size: 14px; max-width: 380px; line-height: 1.65; }
+
+  .suggestion-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+  .suggestion-chip {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .suggestion-chip:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+  /* USER MESSAGE */
+  .msg-row { display: flex; }
+  .msg-row.user { justify-content: flex-end; }
+
+  .user-bubble {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px 14px 4px 14px;
+    padding: 13px 17px;
+    max-width: 640px;
+  }
+
+  .user-bubble .attach-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(94, 234, 212, 0.07);
+    border: 1px solid rgba(94, 234, 212, 0.18);
+    border-radius: 7px;
+    padding: 7px 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .attach-chip-icon {
+    width: 22px; height: 22px;
+    background: rgba(94,234,212,0.15);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent); flex-shrink: 0;
+  }
+
+  .user-bubble-text { font-size: 13.5px; color: var(--text); line-height: 1.5; }
+
+  /* ASSISTANT / PIPELINE MESSAGE */
+  .msg-row.assistant { align-items: flex-start; gap: 11px; }
+
+  .assistant-avatar {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .assistant-content { flex: 1; min-width: 0; max-width: 640px; }
+
+  .pipeline-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 16px 14px;
+    transition: padding 0.3s ease;
+  }
+
+  .pipeline-card.collapsed {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .pipeline-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 12px;
+  }
+
+  .stages-host { overflow: hidden; transition: max-height 0.35s ease, opacity 0.3s ease; }
+  .stages-host.collapsed { max-height: 0; opacity: 0; margin: 0; }
+
+  .pipeline-summary-row {
+    display: none;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 0 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .pipeline-summary-row.visible { display: flex; }
+
+  .pipeline-summary-row:hover .pipeline-summary-text { color: var(--text-dim); }
+
+  .pipeline-summary-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0E0B17;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .pipeline-summary-text {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: 'IBM Plex Mono', monospace;
+    transition: color 0.2s;
+  }
+
+  .pipeline-summary-chevron {
+    color: var(--text-faint);
+    transition: transform 0.25s ease;
+    margin-left: 2px;
+  }
+  .pipeline-summary-chevron.open { transform: rotate(180deg); }
+
+  .stage {
+    display: flex;
+    gap: 11px;
+    padding: 7px 0;
+    align-items: flex-start;
+  }
+
+  .stage-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--bg-raised);
+    border: 1.5px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    transition: all 0.3s;
+    margin-top: 1px;
+  }
+
+  .stage-dot.running { border-color: var(--amber); color: var(--amber); background: rgba(242,184,114,0.08); }
+  .stage-dot.done { border-color: var(--accent-dim); background: var(--accent); color: #0B0E11; }
+
+  .stage-body { flex: 1; }
+
+  .stage-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    transition: color 0.2s;
+  }
+  .stage-name.active { color: var(--text); }
+
+  .stage-note {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .retry-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(242, 117, 107, 0.08);
+    border: 1px solid rgba(242, 117, 107, 0.22);
+    color: #F2A099;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-top: 5px;
+  }
+
+  .spinner {
+    width: 10px; height: 10px;
+    border: 1.5px solid rgba(242,184,114,0.3);
+    border-top-color: var(--amber);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* REPORT MESSAGE */
+  .report-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 10px;
+    animation: fadeUp 0.35s ease;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .report-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .report-badge {
+    background: rgba(94,234,212,0.1);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .pdf-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    border-radius: 6px;
+    padding: 6px 11px;
+    font-size: 11.5px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .pdf-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+  .report-section { margin-bottom: 14px; font-size: 13px; }
+  .report-section:last-child { margin-bottom: 0; }
+  .report-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .report-section-body { color: var(--text-dim); line-height: 1.6; }
+
+  .confidence-row { display: flex; align-items: center; gap: 10px; }
+  .confidence-bar { flex: 1; height: 5px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+  .confidence-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); }
+  .confidence-num { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--accent); }
+
+  /* COMPOSER */
+  .composer-wrap {
+    padding: 16px 36px 26px;
+    flex-shrink: 0;
+  }
+
+  .attached-preview {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .attach-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .attach-pill-icon {
+    width: 22px; height: 22px;
+    background: rgba(94,234,212,0.12);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-family: 'IBM Plex Mono', monospace; color: var(--accent);
+  }
+  .attach-pill-name { color: var(--text-dim); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .attach-pill-x { color: var(--text-faint); cursor: pointer; font-size: 14px; }
+
+  .composer {
+    background: var(--bg-input);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 12px 12px 12px 18px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    transition: border-color 0.2s;
+  }
+  .composer:focus-within { border-color: var(--accent-dim); }
+
+  .attach-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .attach-btn:hover { background: var(--bg-raised); color: var(--accent); }
+
+  #composerInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    resize: none;
+    outline: none;
+    max-height: 120px;
+    line-height: 1.5;
+    padding: 7px 0;
+  }
+  #composerInput::placeholder { color: var(--text-faint); }
+
+  .send-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    border: none;
+    color: #0B0E11;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .send-btn:hover { background: var(--accent-dim); }
+  .send-btn:active { transform: scale(0.94); }
+  .send-btn:disabled { background: var(--line); color: var(--text-faint); cursor: not-allowed; }
+
+  .composer-hint {
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--text-faint);
+    margin-top: 9px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  #fileInput { display: none; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">O</div>
+      <div>
+        <div class="brand-name">Orbit</div>
+        <div class="brand-sub">agent pipeline</div>
+      </div>
+    </div>
+    <button class="new-chat-btn" id="newChatBtn">New chat</button>
+  </header>
+
+  <div class="messages" id="messages">
+    <div class="intro" id="intro">
+      <div class="intro-mark">O</div>
+      <div class="intro-title">Attach a document to begin</div>
+      <div class="intro-sub">Drop a file in or type a question. Three agents will draft, cross-check, and validate before returning a report.</div>
+      <div class="suggestion-row">
+        <div class="suggestion-chip" data-suggest="Review this document for key terms">Review for key terms</div>
+        <div class="suggestion-chip" data-suggest="Summarize this file">Summarize this file</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="composer-wrap">
+    <div class="attached-preview" id="attachedPreview"></div>
+    <div class="composer">
+      <button class="attach-btn" id="attachBtn" title="Attach file">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M21.44 11.05l-9.19 9.19a5 5 0 01-7.07-7.07l9.19-9.19a3.5 3.5 0 015 5l-9.2 9.19a1.5 1.5 0 01-2.12-2.12l8.49-8.48" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <textarea id="composerInput" placeholder="Message Orbit…" rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="composer-hint">Files stay attached to this chat only · PDF, PNG, JPG up to 10MB</div>
+  </div>
+
+  <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg">
+</div>
+
+<script>
+// ---------- UI SHELL ONLY ----------
+// Placeholder pipeline timing + dummy report content.
+// No real document analysis happens here — wire runPipelineFor()
+// to a real backend to make this functional.
+
+const messages = document.getElementById('messages');
+const intro = document.getElementById('intro');
+const composerInput = document.getElementById('composerInput');
+const sendBtn = document.getElementById('sendBtn');
+const attachBtn = document.getElementById('attachBtn');
+const fileInput = document.getElementById('fileInput');
+const attachedPreview = document.getElementById('attachedPreview');
+const newChatBtn = document.getElementById('newChatBtn');
+
+let attachedFile = null;
+
+document.querySelectorAll('.suggestion-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    composerInput.value = chip.dataset.suggest;
+    autoGrow();
+    updateSendState();
+    composerInput.focus();
+  });
+});
+
+attachBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length) {
+    attachedFile = e.target.files[0];
+    renderAttachedPreview();
+    updateSendState();
+  }
+});
+
+function renderAttachedPreview() {
+  if (!attachedFile) { attachedPreview.innerHTML = ''; return; }
+  const ext = attachedFile.name.split('.').pop().toUpperCase();
+  attachedPreview.innerHTML = `
+    <div class="attach-pill">
+      <div class="attach-pill-icon">${ext}</div>
+      <div class="attach-pill-name">${attachedFile.name}</div>
+      <div class="attach-pill-x" id="removeAttach">&times;</div>
+    </div>`;
+  document.getElementById('removeAttach').onclick = () => {
+    attachedFile = null;
+    renderAttachedPreview();
+    updateSendState();
+  };
+}
+
+composerInput.addEventListener('input', () => { autoGrow(); updateSendState(); });
+composerInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+
+function autoGrow() {
+  composerInput.style.height = 'auto';
+  composerInput.style.height = Math.min(composerInput.scrollHeight, 120) + 'px';
+}
+
+function updateSendState() {
+  sendBtn.disabled = !(composerInput.value.trim() || attachedFile);
+}
+
+sendBtn.addEventListener('click', send);
+
+newChatBtn.addEventListener('click', () => {
+  messages.innerHTML = '';
+  messages.appendChild(intro);
+  attachedFile = null;
+  renderAttachedPreview();
+  composerInput.value = '';
+  updateSendState();
+});
+
+function send() {
+  const text = composerInput.value.trim();
+  if (!text && !attachedFile) return;
+
+  if (intro.parentNode) intro.remove();
+
+  appendUserMessage(text, attachedFile);
+
+  const fileSnapshot = attachedFile;
+  const userMessage = text;
+
+  composerInput.value = '';
+  autoGrow();
+  attachedFile = null;
+  renderAttachedPreview();
+  updateSendState();
+
+  runPipeline(fileSnapshot, userMessage);
+}
+
+function appendUserMessage(text, file) {
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  let fileHtml = '';
+  if (file) {
+    const ext = file.name.split('.').pop().toUpperCase();
+    fileHtml = `<div class="attach-chip"><div class="attach-chip-icon">${ext}</div>${file.name}</div>`;
+  }
+  row.innerHTML = `<div class="user-bubble">${fileHtml}${text ? `<div class="user-bubble-text">${escapeHtml(text)}</div>` : ''}</div>`;
+  messages.appendChild(row);
+  scrollDown();
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function scrollDown() { messages.scrollTop = messages.scrollHeight; }
+
+const STAGES = [
+  { name: 'Agent 1 — Draft', note: 'reading document, extracting structure' },
+  { name: 'Agent 2 — Cross-check', note: 'comparing draft against source' },
+  { name: 'Agent 3 — Validator', note: 'scoring against confidence threshold' }
+];
+
+async function runPipeline(file, patientNotes) {
+  const row = document.createElement('div');
+  row.className = 'msg-row assistant';
+  row.innerHTML = `
+    <div class="assistant-avatar">O</div>
+    <div class="assistant-content">
+      <div class="pipeline-card" id="pcard_${Date.now()}">
+        <div class="pipeline-summary-row" id="summaryRow">
+          <div class="pipeline-summary-check">✓</div>
+          <div class="pipeline-summary-text">Pipeline complete — 3 agents, 1 retry</div>
+          <svg class="pipeline-summary-chevron" id="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="pipeline-card-label" id="pcardLabel">Pipeline running</div>
+        <div id="stagesHost" class="stages-host"></div>
+      </div>
+    </div>
+  `;
+  messages.appendChild(row);
+  scrollDown();
+
+  const pcard = row.querySelector('.pipeline-card');
+  const stagesHost = row.querySelector('#stagesHost');
+  const summaryRow = row.querySelector('#summaryRow');
+  const pcardLabel = row.querySelector('#pcardLabel');
+  const chevron = row.querySelector('#chevron');
+
+  const stageNodes = STAGES.map(s => buildStage(s));
+  const formData = new FormData();
+
+  if (file) {
+    formData.append("file", file);
+  } 
+
+  formData.append("patient_notes",patientNotes);
+
+  const response = await fetch(
+    "/analyze",
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  const result = await response.json();
+  console.log(result);
+
+  stageNodes.forEach(n => stagesHost.appendChild(n.el));
+
+  let retryCount = 0;
+
+  await runStage(stageNodes[0], 'running'); await wait(1000); await runStage(stageNodes[0], 'done');
+  scrollDown();
+  await runStage(stageNodes[1], 'running'); await wait(900); await runStage(stageNodes[1], 'done');
+  scrollDown();
+  await runStage(stageNodes[2], 'running'); await wait(800);
+
+  showRetry(stageNodes[2]);
+  retryCount++;
+  scrollDown();
+  await wait(900);
+
+  await runStage(stageNodes[0], 'running', 'revising — confidence 0.79'); await wait(900); await runStage(stageNodes[0], 'done', 'attempt 2');
+  await runStage(stageNodes[1], 'running'); await wait(700); await runStage(stageNodes[1], 'done');
+  await runStage(stageNodes[2], 'running'); await wait(800); await runStage(stageNodes[2], 'done', 'confidence 0.91 — cleared');
+  scrollDown();
+
+  // Collapse the pipeline into a summary row, like a finished tool-use block
+  await wait(500);
+  pcardLabel.style.display = 'none';
+  stagesHost.classList.add('collapsed');
+  pcard.classList.add('collapsed');
+  summaryRow.classList.add('visible');
+  summaryRow.querySelector('.pipeline-summary-text').textContent =
+    `Pipeline complete — 3 agents, ${retryCount} retry`;
+
+  let expanded = false;
+  summaryRow.addEventListener('click', () => {
+    expanded = !expanded;
+    if (expanded) {
+      pcard.classList.remove('collapsed');
+      stagesHost.classList.remove('collapsed');
+      pcardLabel.style.display = 'block';
+      pcardLabel.textContent = 'Pipeline (completed)';
+      chevron.classList.add('open');
+    } else {
+      pcard.classList.add('collapsed');
+      stagesHost.classList.add('collapsed');
+      pcardLabel.style.display = 'none';
+      chevron.classList.remove('open');
+    }
+  });
+
+  appendReport(row, result);
+  scrollDown();
+}
+
+function buildStage(stage) {
+  const el = document.createElement('div');
+  el.className = 'stage';
+  el.innerHTML = `
+    <div class="stage-dot" data-dot>○</div>
+    <div class="stage-body">
+      <div class="stage-name" data-name>${stage.name}</div>
+      <div class="stage-note" data-note>${stage.note}</div>
+    </div>
+  `;
+  return { el, dot: el.querySelector('[data-dot]'), name: el.querySelector('[data-name]'), note: el.querySelector('[data-note]') };
+}
+
+async function runStage(node, state, noteOverride) {
+  node.dot.className = 'stage-dot ' + state;
+  if (state === 'running') {
+    node.dot.innerHTML = '<div class="spinner"></div>';
+    node.name.classList.add('active');
+  } else if (state === 'done') {
+    node.dot.innerHTML = '✓';
+  }
+  if (noteOverride) node.note.textContent = noteOverride;
+}
+
+function showRetry(node) {
+  node.note.innerHTML = `<span class="retry-tag">↻ below threshold — looping to Agent 1</span>`;
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function appendReport(parentRow, result) {
+  const content = parentRow.querySelector('.assistant-content');
+  const card = document.createElement('div');
+  card.className = 'report-card';
+  card.innerHTML = `
+    <div class="report-top">
+      <span class="report-badge">Final report</span>
+      <button class="pdf-btn" id="pdfBtn_${Date.now()}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M12 16l-4-4M12 16l4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18v1a2 2 0 002 2h12a2 2 0 002-2v-1"/></svg>
+        Export PDF
+      </button>
+    </div>
+    <div class="report-section">
+      <div class="report-section-label">Possible Conditions</div>
+      <div class="report-section-body">
+        ${result.diagnosis.possible_conditions?.join("<br>") || "No conditions found"}
+      </div>
+    </div>
+    <div class="report-section">
+      <div class="report-section-label">Evidence</div>
+      <div class="report-section-body"> 
+        ${(result.diagnosis.evidence || []).join("<br>")}
+      </div>
+    </div>
+    <div class="report-section">
+       <div class="report-section-label">Recommendations</div>
+       <div class="report-section-body">
+         ${(result.diagnosis.recommendations || []).join("<br>")}
+       </div>
+    </div>
+    <div class="report-section">
+      <div class="report-section-label">Validation Review</div>
+      <div class="report-section-body">
+        ${result.validation.feedback || ""}
+      </div>
+    </div>
+
+  `;
+  content.appendChild(card);
+  card.querySelector('button').addEventListener('click', () => {window.open('/download-report', '_blank')}
+  );
+}
+</script>
+</body>
+</html>
