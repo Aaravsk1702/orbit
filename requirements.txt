@@ -10,9 +10,5 @@ reportlab
 pydantic
 python-dotenv
 pillow
-pydantic
-python-magic-bin
 requests
-reportlab
 aiofiles
-langgraph
