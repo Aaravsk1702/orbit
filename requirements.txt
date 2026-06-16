@@ -9,3 +9,6 @@ pymupdf
 reportlab
 pydantic
 python-dotenv
+pillow
+pydantic
+python-magic-bin

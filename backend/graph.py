@@ -1,0 +1,44 @@
+from agents.diagnosis import diagnosis_agent
+from agents.validation import validation_agent
+from agents.threshold import threshold_agent
+
+MAX_ITERATIONS = 3
+
+
+def run_pipeline(report_text):
+
+    feedback = ""
+
+    for attempt in range(MAX_ITERATIONS):
+
+        diagnosis = diagnosis_agent(
+            report_text,
+            feedback
+        )
+
+        validation = validation_agent(
+            report_text,
+            diagnosis
+        )
+
+        decision = threshold_agent(
+            validation
+        )
+
+        if decision["approved"]:
+
+            return {
+                "approved": True,
+                "attempts": attempt + 1,
+                "diagnosis": diagnosis,
+                "validation": validation
+            }
+
+        feedback = decision["feedback"]
+
+    return {
+        "approved": False,
+        "attempts": MAX_ITERATIONS,
+        "diagnosis": diagnosis,
+        "validation": validation
+    }
