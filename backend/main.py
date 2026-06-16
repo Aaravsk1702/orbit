@@ -10,6 +10,7 @@ from backend.agents.chat_agent import chat_agent
 from backend.services.report_generator import generate_report
 from backend.services.pdf_parser import extract_text_from_pdf
 from backend.services.image_parser import analyze_medical_image
+from backend.services.gemini_service import generate_response
 
 from fastapi.responses import FileResponse
 
@@ -45,9 +46,17 @@ async def chat(
 
     if "latest" not in chat_memory:
 
+        answer =  generate_response(f"""
+        You are Orbit, an AI medical assistant.
+        
+        User:
+        {message}
+
+        Respond helpfully and concisely
+        """)                       
+
         return {
-            "answer":
-            "Please upload a report first."
+            "answer": answer
         }
 
     answer = chat_agent(
