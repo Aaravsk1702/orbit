@@ -6,12 +6,14 @@ import shutil
 import os
 
 from backend.graph import run_pipeline
+from backend.agents.chat_agent import chat_agent
 from backend.services.report_generator import generate_report
 from backend.services.pdf_parser import extract_text_from_pdf
 from backend.services.image_parser import analyze_medical_image
 
 from fastapi.responses import FileResponse
 
+chat_memory = {}
 
 app = FastAPI()
 
@@ -35,6 +37,28 @@ def download_report():
         media_type="application/pdf",
         filename="orbit_report.pdf"
     )
+
+@app.post("/chat")
+async def chat(
+    message: str = Form(...)
+):
+
+    if "latest" not in chat_memory:
+
+        return {
+            "answer":
+            "Please upload a report first."
+        }
+
+    answer = chat_agent(
+        chat_memory["latest"]["diagnosis"],
+        chat_memory["latest"]["validation"],
+        message
+    )
+
+    return {
+        "answer": answer
+    }
 
 @app.post("/analyze")
 async def analyze(
@@ -77,6 +101,11 @@ async def analyze(
             report_text,
             patient_notes
         )
+
+        chat_memory["latest"] = {
+            "diagnosis": result["diagnosis"],
+            "validation": result["validation"]
+        }
 
         if "diagnosis" in result and "validation" in result:
 

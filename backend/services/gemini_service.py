@@ -21,12 +21,7 @@ def generate_response(prompt: str):
         print(f"Gemini Error: {e}")
 
         return """
-        {
-            "possible_conditions": ["Unable to analyze"],
-            "evidence": [],
-            "recommendations": [
-                "Please retry analysis"
-            ],
-            "confidence": 0
-        }
+        The analysis service is temporarily busy.
+
+        Please wait a moment and try again.
         """
