@@ -586,7 +586,11 @@ function updateSendState() {
 
 sendBtn.addEventListener('click', send);
 
-newChatBtn.addEventListener('click', () => {
+newChatBtn.addEventListener('click', async () => {
+
+  await fetch('/new-chat', {
+    method: 'POST'
+  })
   messages.innerHTML = '';
   messages.appendChild(intro);
   attachedFile = null;

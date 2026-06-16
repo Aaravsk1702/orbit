@@ -60,6 +60,15 @@ async def chat(
         "answer": answer
     }
 
+@app.post("/new-chat")
+def new_chat():
+
+    global chat_memory
+
+    chat_memory = {}
+
+    return {"status": "cleared"}
+
 @app.post("/analyze")
 async def analyze(
     file: UploadFile = File(...),
