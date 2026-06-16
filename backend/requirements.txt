@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langgraph
+langchain
+langchain-google-genai
+google-generativeai
+python-multipart
+pymupdf
+reportlab
+pydantic
+python-dotenv
