@@ -1,5 +1,5 @@
 import json
-from services.gemini_service import generate_response
+from backend.services.gemini_service import generate_response
 
 
 def diagnosis_agent(report_text, feedback=""):

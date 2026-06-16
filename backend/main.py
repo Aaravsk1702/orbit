@@ -3,8 +3,8 @@ from fastapi import UploadFile
 from fastapi import File
 import shutil
 
-from graph import run_pipeline
-from services.pdf_parser import extract_text_from_pdf
+from backend.graph import run_pipeline
+from backend.services.pdf_parser import extract_text_from_pdf
 
 app = FastAPI()
 

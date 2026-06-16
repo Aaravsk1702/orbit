@@ -1,6 +1,6 @@
-from agents.diagnosis import diagnosis_agent
-from agents.validation import validation_agent
-from agents.threshold import threshold_agent
+from backend.agents.diagnosis import diagnosis_agent
+from backend.agents.validation import validation_agent
+from backend.agents.threshold import threshold_agent
 
 MAX_ITERATIONS = 3
 
