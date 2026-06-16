@@ -2,7 +2,7 @@ from backend.agents.diagnosis import diagnosis_agent
 from backend.agents.validation import validation_agent
 from backend.agents.threshold import threshold_agent
 
-MAX_ITERATIONS = 3
+MAX_ITERATIONS = 1
 
 
 def run_pipeline(report_text):
@@ -24,6 +24,9 @@ def run_pipeline(report_text):
         decision = threshold_agent(
             validation
         )
+
+        print("\nThreshold Result:")
+        print(decision)
 
         if decision["approved"]:
 

@@ -9,6 +9,8 @@ class AgentState(TypedDict):
 
     possible_conditions: List[str]
 
+    evidence: List[str]
+
     recommendations: List[str]
 
     confidence: int

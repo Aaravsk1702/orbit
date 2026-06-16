@@ -12,11 +12,23 @@ def diagnosis_agent(report_text, feedback=""):
 
     Previous Feedback:
     {feedback}
+    
+    Return confidence as an integer from 0 to 100.
+
+    Examples:
+    10 = very low confidence
+    50 = moderate confidence
+    85 = high confidence
+    95 = very high confidence
 
     Return ONLY JSON:
 
     {{
-        "possible_condition":"",
+        "possible_conditions":[
+            "..."
+            "..."
+            "..."
+        ],
         "evidence":[""],
         "recommendation":"",
         "confidence":0
@@ -26,6 +38,13 @@ def diagnosis_agent(report_text, feedback=""):
     """
 
     response = generate_response(prompt)
+
+    response = response.replace("```json", "")
+    response = response.replace("```", "")
+    response = response.strip()
+
+    print("Diagnosis Response:")
+    print(response)
 
     try:
         return json.loads(response)
