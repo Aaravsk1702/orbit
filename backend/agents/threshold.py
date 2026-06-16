@@ -1,4 +1,4 @@
-THRESHOLD = 85
+THRESHOLD = 80
 
 
 def threshold_agent(validation_result):

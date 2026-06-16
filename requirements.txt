@@ -12,3 +12,4 @@ python-dotenv
 pillow
 pydantic
 python-magic-bin
+requests

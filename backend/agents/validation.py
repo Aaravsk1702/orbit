@@ -1,5 +1,5 @@
 import json
-from backend.services.gemini_service import generate_response
+from backend.services.deepseek_service import deepseek_response
 
 
 def validation_agent(report_text, diagnosis):
@@ -17,15 +17,11 @@ def validation_agent(report_text, diagnosis):
 
     Tasks:
 
-      Verify whether the findings are supported by the report.
-      Identify unsupported claims.
-      Identify missing evidence.
-      Suggest alternative possible conditions.
-      Evaluate the confidence score.
-      Provide constructive feedback for improvement.
-
-    Return confidence as an integer from 0 to 100 only.
-    Do not use a 1-5 scale.
+    1. Verify whether the findings are supported.
+    2. Identify unsupported claims.
+    3. Suggest alternative possible conditions.
+    4. Evaluate the confidence score.
+    5. Provide feedback
 
     Return ONLY valid JSON:
 
@@ -36,23 +32,29 @@ def validation_agent(report_text, diagnosis):
     "confidence": 0
     }}
 
-    Do not provide a final medical diagnosis.
+    Confidence must be an integer from 0 to 100.
     """
 
-    response = generate_response(prompt)
+    response = deepseek_response(prompt)
 
     response = response.replace("```json", "")
     response = response.replace("```", "")
     response = response.strip()
 
-    print("Validation Response:")
+    print("Deepseek Validation Response:")
     print(response)
 
     try:
         return json.loads(response)
-    except:
+    
+    except Exception as e:
+
+        print("DeepSeek Parse Error:", e)
+        print(response)
+
         return {
             "validated": False,
-            "feedback": "Unable to validate",
+            "feedback": "Validation service error",
+            "alternative_conditions": [],
             "confidence": 50
         }
