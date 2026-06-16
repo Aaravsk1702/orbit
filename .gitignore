@@ -1,0 +1,15 @@
+**pycache**/
+*.pyc
+.env
+venv/
+.venv/
+
+node_modules/
+.next/
+
+dist/
+build/
+
+.DS_Store
+.idea/
+.vscode/
