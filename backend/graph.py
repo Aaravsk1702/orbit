@@ -5,7 +5,7 @@ from backend.agents.threshold import threshold_agent
 MAX_ITERATIONS = 1
 
 
-def run_pipeline(report_text):
+def run_pipeline(report_text, patient_notes):
 
     feedback = ""
 
@@ -13,6 +13,7 @@ def run_pipeline(report_text):
 
         diagnosis = diagnosis_agent(
             report_text,
+            patient_notes,
             feedback
         )
 

@@ -16,3 +16,9 @@ build/
 
 temp_*
 uploads/
+
+# Generated reports
+*.pdf
+
+# Temporary uploaded files
+temp_*

@@ -12,7 +12,7 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 def generate_response(prompt: str):
 
     print("Calling Gemini...")
-    
+
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -22,8 +22,11 @@ def generate_response(prompt: str):
 
         return """
         {
-            "validated": false,
-            "feedback": "API fallback response",
-            "confidence": 90
+            "possible_conditions": ["Unable to analyze"],
+            "evidence": [],
+            "recommendations": [
+                "Please retry analysis"
+            ],
+            "confidence": 0
         }
         """

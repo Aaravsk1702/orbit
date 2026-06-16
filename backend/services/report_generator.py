@@ -7,9 +7,18 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet
 
 
-def create_report(data, filename):
+def generate_report(
+    filename,
+    patient_notes,
+    diagnosis,
+    validation
+):
 
-    doc = SimpleDocTemplate(filename)
+    report_path = "orbit_report.pdf"
+
+    doc = SimpleDocTemplate(
+        report_path
+    )
 
     styles = getSampleStyleSheet()
 
@@ -17,34 +26,138 @@ def create_report(data, filename):
 
     content.append(
         Paragraph(
-            "Medical Assessment Report",
+            "ORBIT Medical Analysis Report",
             styles["Title"]
         )
     )
 
-    content.append(Spacer(1, 12))
+    content.append(
+        Spacer(1, 12)
+    )
 
     content.append(
         Paragraph(
-            f"Possible Condition: {data['diagnosis']['possible_condition']}",
+            f"<b>Uploaded File:</b> {filename}",
             styles["BodyText"]
         )
     )
 
     content.append(
+        Spacer(1, 12)
+    )
+
+    content.append(
         Paragraph(
-            f"Recommendation: {data['diagnosis']['recommendation']}",
+            f"<b>Patient Notes:</b> {patient_notes}",
             styles["BodyText"]
         )
     )
 
     content.append(
+        Spacer(1, 12)
+    )
+
+    content.append(
         Paragraph(
-            f"Confidence: {data['validation']['confidence']}%",
+            "<b>Possible Conditions</b>",
+            styles["Heading2"]
+        )
+    )
+
+    for condition in diagnosis.get(
+        "possible_conditions",
+        []
+    ):
+        content.append(
+            Paragraph(
+                f"• {condition}",
+                styles["BodyText"]
+            )
+        )
+
+    content.append(
+        Spacer(1, 12)
+    )
+
+    content.append(
+        Paragraph(
+            "<b>Clinical Evidence</b>",
+            styles["Heading2"]
+        )
+    )
+
+    for evidence in diagnosis.get(
+        "evidence",
+        []
+    ):
+        content.append(
+            Paragraph(
+                f"• {evidence}",
+                styles["BodyText"]
+            )
+        )
+
+    content.append(
+        Spacer(1, 12)
+    )
+
+    content.append(
+        Paragraph(
+            "<b>Recommendations</b>",
+            styles["Heading2"]
+        )
+    )
+
+    for recommendation in diagnosis.get(
+        "recommendations",
+        []
+    ):
+        content.append(
+            Paragraph(
+                f"• {recommendation}",
+                styles["BodyText"]
+            )
+        )
+
+    content.append(
+        Spacer(1, 12)
+    )
+
+    content.append(
+        Paragraph(
+            "<b>Validation Review</b>",
+            styles["Heading2"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            validation.get(
+                "feedback",
+                ""
+            ),
+            styles["BodyText"]
+        )
+    )
+
+    content.append(
+        Spacer(1, 12)
+    )
+
+    content.append(
+        Paragraph(
+            "<b>Disclaimer</b>",
+            styles["Heading2"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            "This report is AI-assisted and does not constitute a medical diagnosis. Consult a licensed healthcare professional.",
             styles["BodyText"]
         )
     )
 
     doc.build(content)
 
-    return filename
+    return report_path
