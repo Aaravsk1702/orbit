@@ -30,6 +30,10 @@ def home():
         "frontend/index.html"
     )
 
+@app.get("/favicon.png")
+def favicon():
+    return FileResponse("frontend/favicon.png")
+
 @app.get("/download-report")
 def download_report():
 
